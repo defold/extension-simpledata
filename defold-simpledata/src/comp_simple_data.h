@@ -1,0 +1,8 @@
+#ifndef DM_GAMESYS_COMP_SIMPLE_DATA_H
+#define DM_GAMESYS_COMP_SIMPLE_DATA_H
+
+namespace dmSimpleData
+{
+}
+
+#endif // DM_GAMESYS_COMP_SIMPLE_DATA_H

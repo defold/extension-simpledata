@@ -1,0 +1,6 @@
+name: SimpleDataExt
+
+platforms:
+    common:
+        context:
+            symbols: ["ResourceTypeSimpleDataExt","ComponentTypeSimpleDataExt"]
