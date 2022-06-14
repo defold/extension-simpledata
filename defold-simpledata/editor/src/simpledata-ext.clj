@@ -14,7 +14,6 @@
   (:require [dynamo.graph :as g]
             [editor.build-target :as bt]
             [editor.graph-util :as gu]
-            [editor.outline :as outline]
             [editor.protobuf :as protobuf]
             [editor.resource-node :as resource-node]
             [editor.validation :as validation]
@@ -77,8 +76,8 @@
   of the build target are hashed and used to determine if we need to re-run the
   build-fn and write a new file. If there are build errors, return an ErrorValue
   that will abort the build and report the errors to the Build Errors pane."
-  [_node-id resource simpledata-pb build-errors]
-  (g/precluding-errors build-errors
+  [_node-id resource simpledata-pb own-build-errors]
+  (g/precluding-errors own-build-errors
     [(bt/with-content-hash
        {:node-id _node-id
         :resource (workspace/make-build-resource resource)
@@ -152,7 +151,7 @@
    :u64 u64
    :i64 i64})
 
-(g/defnk produce-build-errors
+(g/defnk produce-own-build-errors
   "Produce an ErrorPackage of one or more ErrorValues that express problems with
   our SimpleData. If there are no errors, produce nil. Any errors produced here
   will be reported as clickable errors in the Build Errors view."
@@ -180,16 +179,6 @@
     :i32 (:i32 data)
     :u64 (:u64 data)
     :i64 (:i64 data)))
-
-(g/defnk produce-node-outline
-  "Produce node outline data for displaying our SimpleData in the outline view
-  tree hierarchy. If there are errors, apply a red coloring to our entry."
-  [_node-id build-errors]
-  {:node-id _node-id
-   :node-outline-key simpledata-ext
-   :label "Simple Data"
-   :icon simpledata-icon
-   :outline-error? (g/error-fatal? build-errors)})
 
 (g/defnode SimpleDataNode
   "Defines a node type that will represent SimpleData resources in the graph.
@@ -220,12 +209,11 @@
 
   ;; Outputs for internal use.
   (output simpledata-pb g/Any produce-simpledata-pb)
-  (output build-errors g/Any produce-build-errors)
 
   ;; Outputs we're expected to implement.
   (output form-data g/Any :cached produce-form-data)
-  (output node-outline outline/OutlineData :cached produce-node-outline)
   (output save-value g/Any (gu/passthrough simpledata-pb))
+  (output own-build-errors g/Any produce-own-build-errors)
   (output build-targets g/Any :cached produce-build-targets))
 
 ;;//////////////////////////////////////////////////////////////////////////////////////////////
