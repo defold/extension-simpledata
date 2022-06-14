@@ -1,5 +1,6 @@
 local function print_props(url)
 	print("url:", url)
+	print("    .name", go.get(url, "name"))
 	print("    .f32", go.get(url, "f32"))
 	print("    .u32", go.get(url, "u32"))
 	print("    .i32", go.get(url, "i32"))

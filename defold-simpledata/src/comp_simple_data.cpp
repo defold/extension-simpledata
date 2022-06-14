@@ -148,6 +148,7 @@ namespace dmSimpleData
             return dmGameObject::PROPERTY_RESULT_OK; \
         }
 
+        HANDLE_PROP(PROP_NAME, dmHashString64(ddf->m_Name));
         HANDLE_PROP(PROP_F32, ddf->m_F32);
         HANDLE_PROP(PROP_U32, (float)ddf->m_U32);
         HANDLE_PROP(PROP_I32, (float)ddf->m_I32);
