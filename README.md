@@ -15,7 +15,7 @@ that allows you to edit your content in the Editor, and then bundle it using Bob
 
 First let's look at the folder structure - [README_STRUCTURE.md](./README_STRUCTURE.md)
 
-Next, it's good to understand the data flow - [./README_DATA_FLOW.md](./README_DATA_FLOW.md)
+Next, it's good to understand the data flow - [README_DATA_FLOW.md](./README_DATA_FLOW.md)
 
 Here is some further info about the specifics of the engine parts:
 
