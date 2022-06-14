@@ -21,6 +21,7 @@ namespace dmSimpleData
     static const dmhash_t PROP_I32 = dmHashString64("i32");
     static const dmhash_t PROP_U64 = dmHashString64("u64");
     static const dmhash_t PROP_I64 = dmHashString64("i64");
+    static const dmhash_t PROP_V3 = dmHashString64("v3");
 
     static const char* PROJECT_PROPERTY_MAX_COUNT = "simpledata.max_count";
 
@@ -154,6 +155,8 @@ namespace dmSimpleData
         HANDLE_PROP(PROP_I32, (float)ddf->m_I32);
         HANDLE_PROP(PROP_U64, (double)ddf->m_U64);
         HANDLE_PROP(PROP_I64, (double)ddf->m_I64);
+
+        HANDLE_PROP(PROP_V3, ddf->m_V3); // dmVMath::Vector3
 
     #undef HANDLE_PROP
         return dmGameObject::PROPERTY_RESULT_NOT_FOUND;
