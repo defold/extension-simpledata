@@ -13,11 +13,11 @@ Defold [native extension](https://www.defold.com/manuals/extensions/) for adding
 This extension serves as an example of how it's possible to add your own extension
 that allows you to edit your content in the Editor, and then bundle it using Bob, and ultimately use it in the Engine.
 
-First let's look at the folder structure - [](./README_STRUCTURE.md)
+First let's look at the folder structure - [README_STRUCTURE.md](./README_STRUCTURE.md)
 
-Next, it's good to understand the data flow - [](./README_DATA_FLOW.md)
+Next, it's good to understand the data flow - [./README_DATA_FLOW.md](./README_DATA_FLOW.md)
 
 Here is some further info about the specifics of the engine parts:
 
-    [](./README_ENGINE_RESOURCE.md)
-    [](./README_ENGINE_COMPONENT.md)
+* [README_ENGINE_RESOURCE.md](./README_ENGINE_RESOURCE.md)
+* [README_ENGINE_COMPONENT.md](./README_ENGINE_COMPONENT.md)
