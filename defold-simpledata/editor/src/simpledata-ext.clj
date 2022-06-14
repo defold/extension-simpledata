@@ -10,41 +10,25 @@
 ;; CONDITIONS OF ANY KIND, either express or implied. See the License for the
 ;; specific language governing permissions and limitations under the License.
 
-(ns editor.spineext
-  (:require [clojure.java.io :as io]
-            [clojure.string :as str]
-            [editor.protobuf :as protobuf]
-            [dynamo.graph :as g]
+(ns editor.defold-simpledata
+  (:require [dynamo.graph :as g]
             [editor.build-target :as bt]
             [editor.graph-util :as gu]
-            [editor.geom :as geom]
-            [editor.resource :as resource]
+            [editor.outline :as outline]
+            [editor.protobuf :as protobuf]
             [editor.resource-node :as resource-node]
             [editor.validation :as validation]
-            [editor.workspace :as workspace]
-            [editor.types :as types]
-            [editor.outline :as outline])
-  (:import [editor.types AABB]
-           [org.apache.commons.io IOUtils]
-           [java.io IOException]
-           [java.util HashSet]
-           [java.net URL]
-           [javax.vecmath Matrix4d Vector3d Vector4d]))
+            [editor.workspace :as workspace]))
 
 (set! *warn-on-reflection* true)
 
-(def simpledata-icon "/defold-simpledata/editor/resources/icons/32/Icons-SimpleData.png")
-(def simpledata-ext "simpledata")
-(def simpledata-plugin-desc-cls (workspace/load-class! "com.dynamo.simpledata.proto.SimpleData$SimpleDataDesc"))
+(def ^:private simpledata-icon "/defold-simpledata/editor/resources/icons/Icon-SimpleData.png")
+(def ^:private simpledata-ext "simpledata")
+
+(def ^:private simpledata-plugin-desc-cls
+  (delay (workspace/load-class! "com.dynamo.simpledata.proto.SimpleData$SimpleDataDesc")))
 
 ;;//////////////////////////////////////////////////////////////////////////////////////////////
-
-(g/defnk produce-outline-data
-  [_node-id]
-  {:node-id _node-id
-   :node-outline-key "SimpleData"
-   :label "SimpleData"
-   :icon simpledata-icon})
 
 (defn- set-form-op [{:keys [node-id]} [property] value]
   (g/set-property! node-id property value))
@@ -52,25 +36,36 @@
 (defn- clear-form-op [{:keys [node-id]} [property]]
   (g/clear-property! node-id property))
 
+(defn- validate-property [node-id prop-kw validate-fn value]
+  (validation/prop-error :fatal node-id prop-kw validate-fn value (validation/keyword->name prop-kw)))
 
-(g/defnk produce-simpledata-pb [name f32 u32 i32 u64 i64]
-  {:name name
-   :f32 f32
-   :u32 u32
-   :i32 i32
-   :u64 u64
-   :i64 i64})
+(defn- validate-name [node-id value]
+  (validate-property node-id :name validation/prop-empty? value))
 
-(defn build-simpledata
-  [resource dep-resources user-data]
-  (let [pb-msg (reduce #(assoc %1 (first %2) (second %2))
-                       (:pb-msg user-data)
-                       (map (fn [[label res]] [label (resource/proj-path (get dep-resources res))]) (:dep-resources user-data)))]
+(defn- validate-f32 [node-id value]
+  (validate-property node-id :f32 validation/prop-1-1? value))
+
+(defn- validate-u32 [node-id value]
+  (validate-property node-id :u32 validation/prop-negative? value))
+
+(defn- validate-u64 [node-id value]
+  (validate-property node-id :u64 validation/prop-negative? value))
+
+(defn- build-simpledata [resource _dep-resources user-data]
+  (let [simpledata-pb (:simpledata-pb user-data)
+        content (protobuf/map->bytes @simpledata-plugin-desc-cls simpledata-pb)]
     {:resource resource
-     :content (protobuf/map->bytes simpledata-plugin-desc-cls pb-msg)}))
+     :content content}))
 
-(g/defnk produce-form-data
-  [_node-id name f32 u32 i32 u64 i64]
+(g/defnk produce-build-targets [_node-id resource simpledata-pb build-errors]
+  (g/precluding-errors build-errors
+    [(bt/with-content-hash
+       {:node-id _node-id
+        :resource (workspace/make-build-resource resource)
+        :build-fn build-simpledata
+        :user-data {:simpledata-pb simpledata-pb}})]))
+
+(g/defnk produce-form-data [_node-id name f32 u32 i32 u64 i64]
   {:navigation false
    :form-ops {:user-data {:node-id _node-id}
               :set set-form-op
@@ -93,8 +88,7 @@
                          :type :integer}
                         {:path [:i64]
                          :label "I64"
-                         :type :integer}
-                         ]}]
+                         :type :integer}]}]
    :values {[:name] name
             [:f32] f32
             [:u32] u32
@@ -102,18 +96,25 @@
             [:u64] u64
             [:i64] i64}})
 
-(g/defnk produce-build-targets
-  [_node-id resource dep-build-targets simpledata-pb]
-  [(bt/with-content-hash
-     {:node-id _node-id
-      :resource (workspace/make-build-resource resource)
-      :build-fn build-simpledata
-      :user-data {:pb-msg simpledata-pb
-                  :dep-resources []}
-      :deps dep-build-targets})])
+(g/defnk produce-simpledata-pb [name f32 u32 i32 u64 i64]
+  {:name name
+   :f32 f32
+   :u32 u32
+   :i32 i32
+   :u64 u64
+   :i64 i64})
 
-(defn load-simpledata [project self resource data]
-  (g/set-property self
+(g/defnk produce-build-errors [_node-id name f32 u32 u64]
+  (g/package-errors
+    _node-id
+    (validate-name _node-id name)
+    (validate-f32 _node-id f32)
+    (validate-u32 _node-id u32)
+    (validate-u64 _node-id u64)))
+
+(defn- load-simpledata [_project self _resource data]
+  (g/set-property
+    self
     :name (:name data)
     :f32 (:f32 data)
     :u32 (:u32 data)
@@ -121,58 +122,66 @@
     :u64 (:u64 data)
     :i64 (:i64 data)))
 
+(g/defnk produce-node-outline [_node-id]
+  {:node-id _node-id
+   :node-outline-key "SimpleData"
+   :label "SimpleData"
+   :icon simpledata-icon})
+
 (g/defnode SimpleDataNode
   (inherits resource-node/ResourceNode)
 
-  (property name g/Str (default "unknown"))
-  (property f32 g/Num (default 0.0)
-            (dynamic error (validation/prop-error-fnk :fatal validation/prop-1-1? f32)))
+  ;; Editable properties.
+  (property name g/Str
+            (default "untitled")
+            (dynamic error (g/fnk [_node-id name] (validate-name _node-id name))))
+  (property f32 g/Num
+            (default 0.0)
+            (dynamic error (g/fnk [_node-id f32] (validate-f32 _node-id f32))))
+  (property u32 g/Int
+            (default 0)
+            (dynamic error (g/fnk [_node-id u32] (validate-u32 _node-id u32))))
+  (property i32 g/Int
+            (default 0))
+  (property u64 g/Int
+            (default 0)
+            (dynamic error (g/fnk [_node-id u64] (validate-u64 _node-id u64))))
+  (property i64 g/Int
+            (default 0))
 
-  (property u32 g/Int (default 0)
-            (dynamic error (validation/prop-error-fnk :fatal validation/prop-negative? u32)))
-  (property i32 g/Int (default 0))
-
-  (property u64 g/Int (default 0)
-            (dynamic error (validation/prop-error-fnk :fatal validation/prop-negative? u64)))
-  (property i64 g/Int (default 0))
-
-
-  (input dep-build-targets g/Any :array)
-
-  (output aabb AABB :cached (g/fnk [] geom/empty-bounding-box))
-
-  (output form-data g/Any :cached produce-form-data)
-  (output node-outline outline/OutlineData :cached produce-outline-data)
-
+  ;; Outputs for internal use.
   (output simpledata-pb g/Any produce-simpledata-pb)
-  (output save-value g/Any (gu/passthrough simpledata-pb))
+  (output build-errors g/Any produce-build-errors)
 
+  ;; Outputs we're expected to implement.
+  (output form-data g/Any :cached produce-form-data)
+  (output node-outline outline/OutlineData :cached produce-node-outline)
+  (output save-value g/Any (gu/passthrough simpledata-pb))
   (output build-targets g/Any :cached produce-build-targets))
 
 ;;//////////////////////////////////////////////////////////////////////////////////////////////
 
+(defn- register-resource-types [workspace]
+  (resource-node/register-ddf-resource-type
+    workspace
+    :ext simpledata-ext
+    :label "Simple Data"
+    :node-type SimpleDataNode
+    :ddf-type @simpledata-plugin-desc-cls
+    :load-fn load-simpledata
+    :icon simpledata-icon
+    :view-types [:cljfx-form-view :text]
+    :view-opts {}
+    :tags #{:component}
+    :tag-opts {:component {:transform-properties #{}}}
+    :template "/defold-simpledata/editor/resources/templates/template.simpledata"))
 
-(defn register-resource-types [workspace]
-  (concat
-   (resource-node/register-ddf-resource-type workspace
-                                             :ext simpledata-ext
-                                             :label "SimpleData"
-                                             :node-type SimpleDataNode
-                                             :ddf-type simpledata-plugin-desc-cls
-                                             :load-fn load-simpledata
-                                             :icon simpledata-icon
-                                             :view-types [:cljfx-form-view :text]
-                                             :view-opts {}
-                                             :tags #{:component}
-                                             ;:tag-opts {:component {:transform-properties #{:position :rotation}}}
-                                             :tag-opts {:component {:transform-properties #{}}}
-                                             :template "/defold-simpledata/editor/resources/templates/template.spinemodel")
-   ))
+;; The plugin
+(defn- load-plugin-simpledata [workspace]
+  (g/transact (register-resource-types workspace)))
 
-; The plugin
-(defn load-plugin-simpledata [workspace]
-  (g/transact (concat (register-resource-types workspace))))
+(defn- return-plugin []
+  (fn [workspace]
+    (load-plugin-simpledata workspace)))
 
-(defn return-plugin []
-  (fn [x] (load-plugin-simpledata x)))
 (return-plugin)

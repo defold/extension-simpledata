@@ -11,4 +11,5 @@ end
 function init(self)
 	print_props("go1#simpledata")
 	print_props("go2#simpledata")
+	print_props("go3#simpledata")
 end
