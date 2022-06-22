@@ -16,6 +16,7 @@
             [editor.graph-util :as gu]
             [editor.protobuf :as protobuf]
             [editor.resource-node :as resource-node]
+            [editor.types :as types]
             [editor.validation :as validation]
             [editor.workspace :as workspace]))
 
@@ -104,7 +105,7 @@
 ;; Produce form-data for editing SimpleData using the form view. This can be
 ;; used to open standalone SimpleData resources in an editor tab. The form view
 ;; will render a simple user-interface based on the data we return here.
-(g/defnk produce-form-data [_node-id name f32 u32 i32 u64 i64]
+(g/defnk produce-form-data [_node-id name f32 u32 i32 u64 i64 v3]
   {:navigation false
    :form-ops {:user-data {:node-id _node-id}
               :set set-form-op!
@@ -127,24 +128,29 @@
                          :type :integer}
                         {:path [:i64]
                          :label "I64"
-                         :type :integer}]}]
+                         :type :integer}
+                        {:path [:v3]
+                         :label "V3"
+                         :type :vec4}]}] ; :vec4 can edit 4 or fewer components.
    :values {[:name] name
             [:f32] f32
             [:u32] u32
             [:i32] i32
             [:u64] u64
-            [:i64] i64}})
+            [:i64] i64
+            [:v3] v3}})
 
 ;; Produce a Clojure map representation of the protobuf field values that can be
 ;; saved to disk in protobuf text format, or built into a binary protobuf
 ;; message for the engine runtime.
-(g/defnk produce-simpledata-pb [name f32 u32 i32 u64 i64]
+(g/defnk produce-simpledata-pb [name f32 u32 i32 u64 i64 v3]
   {:name name
    :f32 f32
    :u32 u32
    :i32 i32
    :u64 u64
-   :i64 i64})
+   :i64 i64
+   :v3 v3})
 
 ;; Produce an ErrorPackage of one or more ErrorValues that express problems with
 ;; our SimpleData. If there are no errors, produce nil. Any errors produced here
@@ -171,7 +177,8 @@
     :u32 (:u32 data)
     :i32 (:i32 data)
     :u64 (:u64 data)
-    :i64 (:i64 data)))
+    :i64 (:i64 data)
+    :v3 (:v3 data)))
 
 ;; Defines a node type that will represent SimpleData resources in the graph.
 ;; Whenever we encounter a .simpledata file in the project, a SimpleDataNode is
@@ -183,22 +190,13 @@
   (inherits resource-node/ResourceNode)
 
   ;; Editable properties.
-  (property name g/Str
-            (default "untitled")
-            (dynamic error (g/fnk [_node-id name] (validate-name _node-id name))))
-  (property f32 g/Num
-            (default 0.0)
-            (dynamic error (g/fnk [_node-id f32] (validate-f32 _node-id f32))))
-  (property u32 g/Int
-            (default 0)
-            (dynamic error (g/fnk [_node-id u32] (validate-u32 _node-id u32))))
-  (property i32 g/Int
-            (default 0))
-  (property u64 g/Int
-            (default 0)
-            (dynamic error (g/fnk [_node-id u64] (validate-u64 _node-id u64))))
-  (property i64 g/Int
-            (default 0))
+  (property name g/Str (dynamic error (g/fnk [_node-id name] (validate-name _node-id name))))
+  (property f32 g/Num (dynamic error (g/fnk [_node-id f32] (validate-f32 _node-id f32))))
+  (property u32 g/Int (dynamic error (g/fnk [_node-id u32] (validate-u32 _node-id u32))))
+  (property i32 g/Int)
+  (property u64 g/Int (dynamic error (g/fnk [_node-id u64] (validate-u64 _node-id u64))))
+  (property i64 g/Int)
+  (property v3 types/Vec3)
 
   ;; Outputs for internal use.
   (output simpledata-pb g/Any produce-simpledata-pb)

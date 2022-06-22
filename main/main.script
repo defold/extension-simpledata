@@ -6,6 +6,7 @@ local function print_props(url)
 	print("    .i32", go.get(url, "i32"))
 	print("    .u64", go.get(url, "u64"))
 	print("    .i64", go.get(url, "i64"))
+	print("    .v3", go.get(url, "v3"))
 end
 
 function init(self)
