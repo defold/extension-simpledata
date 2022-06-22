@@ -9,3 +9,13 @@ v3 {
   y: 8.0
   z: 9.0
 }
+array_f32: 20.0
+array_f32: 21.1
+array_f32: 22.2
+array_f32: 23.3
+array_f32: 24.4
+array_f32: 25.5
+array_f32: 26.6
+array_f32: 27.7
+array_f32: 28.8
+array_f32: 29.9
