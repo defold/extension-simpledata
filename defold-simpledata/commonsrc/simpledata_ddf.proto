@@ -17,4 +17,5 @@ message SimpleDataDesc
     optional int64 i64 = 6;
     // Also has support for Quat, Point3 and Vector4
     optional dmMath.Vector3 v3 = 7;
+    repeated float array_f32 = 8;
 }
