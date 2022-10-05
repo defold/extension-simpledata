@@ -10,7 +10,7 @@ namespace dmSimpleData
         SimpleDataResource* m_Resource;
     };
 
-    void GetArrayData(SimpleDataComponent* component, float** data, uint32_t* count);
+    void GetArrayF32Data(SimpleDataComponent* component, float** data, uint32_t* count);
 }
 
 #endif // DM_GAMESYS_COMP_SIMPLE_DATA_H

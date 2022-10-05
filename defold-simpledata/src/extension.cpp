@@ -8,7 +8,7 @@ static const char* SIMPLEDATA_EXT = "simpledatac";
 /*# gets array data from a simpledata component
 * Gets array data from a simpledata component from the array_f32 property into a lua table.
 *
-* @name simpledata.get_array
+* @name simpledata.get_array_f32
 * @param url [type:string|hash|url] the simpledata component to get array data from
 * @examples
 *
@@ -16,14 +16,14 @@ static const char* SIMPLEDATA_EXT = "simpledatac";
 *
 * ```lua
 * function init(self)
-*   local data_tbl = simpledata.get_array("#simpledata")
+*   local data_tbl = simpledata.get_array_f32("#simpledata")
 *   for k,v in pairs(data_tbl) do
 *       print(k .. ": " .. v)
 *   end
 * end
 * ```
 */
-static int SimpleDataComp_GetArray(lua_State* L)
+static int SimpleDataComp_GetArrayF32(lua_State* L)
 {
     dmSimpleData::SimpleDataComponent* component = 0;
     dmGameObject::GetComponentFromLua(L, 1, SIMPLEDATA_EXT, 0, (void**)&component, 0);
@@ -31,7 +31,7 @@ static int SimpleDataComp_GetArray(lua_State* L)
 
     float* data    = 0;
     uint32_t count = 0;
-    dmSimpleData::GetArrayData(component, &data, &count);
+    dmSimpleData::GetArrayF32Data(component, &data, &count);
 
     lua_createtable(L, count, 0);
     for(int i=0; i < count; i++)
@@ -50,7 +50,7 @@ static dmExtension::Result AppInitializeSimpleData(dmExtension::AppParams* param
 
 static const luaL_reg SIMPLEDATA_COMP_FUNCTIONS[] =
 {
-    {"get_array", SimpleDataComp_GetArray},
+    {"get_array_f32", SimpleDataComp_GetArrayF32},
     {0, 0}
 };
 

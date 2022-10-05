@@ -14,7 +14,7 @@ local function print_props(url)
 end
 
 function print_array(url)
-	local array_data = simpledata.get_array(url)
+	local array_data = simpledata.get_array_f32(url)
 
 	print("url:", url)
 	for i, v in ipairs(array_data) do

@@ -219,7 +219,7 @@ namespace dmSimpleData
         return dmGameObject::RESULT_OK;
     }
 
-    void GetArrayData(SimpleDataComponent* component, float** data, uint32_t* count)
+    void GetArrayF32Data(SimpleDataComponent* component, float** data, uint32_t* count)
     {
         dmGameSystemDDF::SimpleDataDesc* ddf = component->m_Resource->m_DDF;
         assert(ddf);
