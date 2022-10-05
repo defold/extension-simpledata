@@ -13,12 +13,23 @@ local function print_props(url)
 	end
 end
 
+function print_array(url)
+	local array_data = simpledata.get_array(url)
+
+	print("url:", url)
+	for i, v in ipairs(array_data) do
+		print("    .array_f32", i, v)
+	end
+end
+
 function init(self)
-	--print_props("go1#simpledata")
-	--print_props("go2#simpledata")
-	--print_props("go3#simpledata")
+	print("go.get tests:")
+	print_props("go1#simpledata")
+	print_props("go2#simpledata")
+	print_props("go3#simpledata")
 
-	local array_data = simpledata.get_array("/go1#simpledata")
-
-	pprint(array_data)
+	print("get_array tests:")
+	print_array("/go1#simpledata")
+	print_array("/go2#simpledata")
+	print_array("/go3#simpledata")
 end

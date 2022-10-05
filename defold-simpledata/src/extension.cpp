@@ -5,6 +5,24 @@
 
 static const char* SIMPLEDATA_EXT = "simpledatac";
 
+/*# gets array data from a simpledata component
+* Gets array data from a simpledata component from the array_f32 property into a lua table.
+*
+* @name simpledata.get_array
+* @param url [type:string|hash|url] the simpledata component to get array data from
+* @examples
+*
+* Print all float values from the array property:
+*
+* ```lua
+* function init(self)
+*   local data_tbl = simpledata.get_array("#simpledata")
+*   for k,v in pairs(data_tbl) do
+*       print(k .. ": " .. v)
+*   end
+* end
+* ```
+*/
 static int SimpleDataComp_GetArray(lua_State* L)
 {
     dmSimpleData::SimpleDataComponent* component = 0;
