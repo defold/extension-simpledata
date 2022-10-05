@@ -11,24 +11,18 @@ static int SimpleDataComp_GetArray(lua_State* L)
     dmGameObject::GetComponentFromLua(L, 1, SIMPLEDATA_EXT, 0, (void**)&component, 0);
     assert(component);
 
-    /* TODO
-    float* data = 0;
-    int count = 0;
+    float* data    = 0;
+    uint32_t count = 0;
     dmSimpleData::GetArrayData(component, &data, &count);
-    
-    dmGameSystemDDF::SimpleDataDesc* ddf = component->m_Resource->m_DDF;
 
-    lua_createtable(L, ddf->m_ArrayF32.m_Count, 0);
-
-    for(int i=0; i < ddf->m_ArrayF32.m_Count; i++)
+    lua_createtable(L, count, 0);
+    for(int i=0; i < count; i++)
     {
-        lua_pushnumber(L, i+1);
-        lua_pushnumber(L, ddf->m_ArrayF32.m_Data[i]);
+        lua_pushinteger(L, i+1);
+        lua_pushnumber(L, data[i]);
         lua_settable(L, -3);
     }
-    */
-    
-    return 0;
+    return 1;
 }
 
 static dmExtension::Result AppInitializeSimpleData(dmExtension::AppParams* params)

@@ -207,7 +207,7 @@ namespace dmSimpleData
         ComponentTypeSetGetPropertyFn(type, CompSimpleDataGetProperty);
             // ComponentTypeSetSetPropertyFn(type, CompSimpleDataSetProperty);
             // ComponentTypeSetPropertyIteratorFn(type, CompSimpleDataIterProperties);
-            // ComponentTypeSetGetFn(type, CompSimpleDataGetComponent);
+        ComponentTypeSetGetFn(type, CompSimpleDataGetComponent);
 
         return dmGameObject::RESULT_OK;
     }
@@ -219,7 +219,7 @@ namespace dmSimpleData
         return dmGameObject::RESULT_OK;
     }
 
-    void GetArrayData(SimpleDataComponent* component, float** data, int* count)
+    void GetArrayData(SimpleDataComponent* component, float** data, uint32_t* count)
     {
         dmGameSystemDDF::SimpleDataDesc* ddf = component->m_Resource->m_DDF;
         assert(ddf);
