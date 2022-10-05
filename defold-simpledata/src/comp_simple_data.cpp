@@ -9,6 +9,7 @@
 
 #include <gameobject/gameobject_ddf.h>
 
+#include "comp_simple_data.h"
 #include "simpledata_ddf.h" // generated from the simpledata_ddf.proto
 #include "res_simpledata.h"
 
@@ -35,11 +36,6 @@ namespace dmSimpleData
         }
         // ...
         uint32_t m_MaxComponentsPerWorld;
-    };
-
-    struct SimpleDataComponent
-    {
-        SimpleDataResource* m_Resource;
     };
 
     // One world per loaded collection
@@ -221,6 +217,14 @@ namespace dmSimpleData
         SimpleDataContext* component_context = (SimpleDataContext*)ComponentTypeGetContext(type);
         delete component_context;
         return dmGameObject::RESULT_OK;
+    }
+
+    void GetArrayData(SimpleDataComponent* component, float** data, int* count)
+    {
+        dmGameSystemDDF::SimpleDataDesc* ddf = component->m_Resource->m_DDF;
+        assert(ddf);
+        *data = ddf->m_ArrayF32.m_Data;
+        *count = ddf->m_ArrayF32.m_Count;
     }
 }
 

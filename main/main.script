@@ -14,7 +14,11 @@ local function print_props(url)
 end
 
 function init(self)
-	print_props("go1#simpledata")
-	print_props("go2#simpledata")
-	print_props("go3#simpledata")
+	--print_props("go1#simpledata")
+	--print_props("go2#simpledata")
+	--print_props("go3#simpledata")
+
+	local array_data = simpledata.get_array("/go1#simpledata")
+
+	pprint(array_data)
 end
