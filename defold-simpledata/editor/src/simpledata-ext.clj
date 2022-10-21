@@ -143,14 +143,15 @@
 ;; Produce a Clojure map representation of the protobuf field values that can be
 ;; saved to disk in protobuf text format, or built into a binary protobuf
 ;; message for the engine runtime.
-(g/defnk produce-simpledata-pb [name f32 u32 i32 u64 i64 v3]
+(g/defnk produce-simpledata-pb [name f32 u32 i32 u64 i64 v3 array-f32]
   {:name name
    :f32 f32
    :u32 u32
    :i32 i32
    :u64 u64
    :i64 i64
-   :v3 v3})
+   :v3 v3
+   :array-f32 array-f32})
 
 ;; Produce an ErrorPackage of one or more ErrorValues that express problems with
 ;; our SimpleData. If there are no errors, produce nil. Any errors produced here
@@ -178,7 +179,8 @@
     :i32 (:i32 data)
     :u64 (:u64 data)
     :i64 (:i64 data)
-    :v3 (:v3 data)))
+    :v3 (:v3 data)
+    :array-f32 (:array-f32 data)))
 
 ;; Defines a node type that will represent SimpleData resources in the graph.
 ;; Whenever we encounter a .simpledata file in the project, a SimpleDataNode is
@@ -197,6 +199,7 @@
   (property u64 g/Int (dynamic error (g/fnk [_node-id u64] (validate-u64 _node-id u64))))
   (property i64 g/Int)
   (property v3 types/Vec3)
+  (property array-f32 g/Any)
 
   ;; Outputs for internal use.
   (output simpledata-pb g/Any produce-simpledata-pb)

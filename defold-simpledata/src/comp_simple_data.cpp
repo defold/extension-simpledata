@@ -9,6 +9,7 @@
 
 #include <gameobject/gameobject_ddf.h>
 
+#include "comp_simple_data.h"
 #include "simpledata_ddf.h" // generated from the simpledata_ddf.proto
 #include "res_simpledata.h"
 
@@ -22,6 +23,7 @@ namespace dmSimpleData
     static const dmhash_t PROP_U64 = dmHashString64("u64");
     static const dmhash_t PROP_I64 = dmHashString64("i64");
     static const dmhash_t PROP_V3 = dmHashString64("v3");
+    static const dmhash_t PROP_ARRAY_F32 = dmHashString64("array_f32");
 
     static const char* PROJECT_PROPERTY_MAX_COUNT = "simpledata.max_count";
 
@@ -34,11 +36,6 @@ namespace dmSimpleData
         }
         // ...
         uint32_t m_MaxComponentsPerWorld;
-    };
-
-    struct SimpleDataComponent
-    {
-        SimpleDataResource* m_Resource;
     };
 
     // One world per loaded collection
@@ -149,6 +146,21 @@ namespace dmSimpleData
             return dmGameObject::PROPERTY_RESULT_OK; \
         }
 
+    #define HANDLE_ARRAY_PROP(NAME, VALUE) \
+        if (params.m_PropertyId == NAME) \
+        { \
+            if (params.m_Options.m_HasKey) \
+                return dmGameObject::PROPERTY_RESULT_INVALID_INDEX; \
+            if (params.m_Options.m_Index < 0 || params.m_Options.m_Index >= (VALUE).m_Count) \
+            { \
+                dmLogError("Index %u is out of bounds. Array %s only has %u elements.", params.m_Options.m_Index, dmHashReverseSafe64(params.m_PropertyId), (VALUE).m_Count); \
+                return dmGameObject::PROPERTY_RESULT_INVALID_INDEX; \
+            } \
+            float value = (VALUE).m_Data[params.m_Options.m_Index]; \
+            out_value.m_Variant = dmGameObject::PropertyVar(value); \
+            return dmGameObject::PROPERTY_RESULT_OK; \
+        }
+
         HANDLE_PROP(PROP_NAME, dmHashString64(ddf->m_Name));
         HANDLE_PROP(PROP_F32, ddf->m_F32);
         HANDLE_PROP(PROP_U32, (float)ddf->m_U32);
@@ -158,7 +170,11 @@ namespace dmSimpleData
 
         HANDLE_PROP(PROP_V3, ddf->m_V3); // dmVMath::Vector3
 
+        // Indices are already converted from Lua 1-based to C 0-based
+        HANDLE_ARRAY_PROP(PROP_ARRAY_F32, ddf->m_ArrayF32);
+
     #undef HANDLE_PROP
+    #undef HANDLE_ARRAY_PROP
         return dmGameObject::PROPERTY_RESULT_NOT_FOUND;
     }
 
@@ -191,7 +207,7 @@ namespace dmSimpleData
         ComponentTypeSetGetPropertyFn(type, CompSimpleDataGetProperty);
             // ComponentTypeSetSetPropertyFn(type, CompSimpleDataSetProperty);
             // ComponentTypeSetPropertyIteratorFn(type, CompSimpleDataIterProperties);
-            // ComponentTypeSetGetFn(type, CompSimpleDataGetComponent);
+        ComponentTypeSetGetFn(type, CompSimpleDataGetComponent);
 
         return dmGameObject::RESULT_OK;
     }
@@ -201,6 +217,14 @@ namespace dmSimpleData
         SimpleDataContext* component_context = (SimpleDataContext*)ComponentTypeGetContext(type);
         delete component_context;
         return dmGameObject::RESULT_OK;
+    }
+
+    void GetArrayF32Data(SimpleDataComponent* component, float** data, uint32_t* count)
+    {
+        dmGameSystemDDF::SimpleDataDesc* ddf = component->m_Resource->m_DDF;
+        assert(ddf);
+        *data = ddf->m_ArrayF32.m_Data;
+        *count = ddf->m_ArrayF32.m_Count;
     }
 }
 
