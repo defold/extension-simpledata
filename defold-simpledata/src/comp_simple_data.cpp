@@ -56,7 +56,7 @@ namespace dmSimpleData
 
         uint32_t comp_count = dmMath::Min(context->m_MaxComponentsPerWorld, params.m_MaxComponentInstances);
         world->m_Components.SetCapacity(comp_count);
-        memset(world->m_Components.m_Objects.Begin(), 0, sizeof(SimpleDataComponent) * comp_count);
+        memset(world->m_Components.GetRawObjects().Begin(), 0, sizeof(SimpleDataComponent) * comp_count);
         *params.m_World = world;
         return dmGameObject::CREATE_RESULT_OK;
     }
