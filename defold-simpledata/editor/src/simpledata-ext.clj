@@ -41,7 +41,7 @@
 ;; property value and the name of the property. Is expected to test the validity
 ;; of the property value, and return a string describing the problem in case the
 ;; value is not valid. For valid values, it should return nil.
-(defn- prop-non-empty? [value prop-name]
+(defn- prop-empty? [value prop-name]
   (when (empty? value)
     (format "'%s' must be specified" prop-name)))
 
@@ -49,10 +49,10 @@
 ;; message if the value is invalid. They are used for validation in the
 ;; Property panel, and to produce build errors when building the project.
 (defn- validate-name [node-id value]
-  (validate-property :name prop-non-empty? node-id value))
+  (validate-property :name prop-empty? node-id value))
 
 (defn- validate-f32 [node-id value]
-  (validate-property :f32 validation/prop-1-1? node-id value))
+  (validate-property :f32 (partial validation/prop-outside-range? [0.0 100.0]) node-id value))
 
 (defn- validate-u32 [node-id value]
   (validate-property :u32 validation/prop-negative? node-id value))
