@@ -76,13 +76,13 @@
 ;; of the build target are hashed and used to determine if we need to re-run the
 ;; build-fn and write a new file. If there are build errors, return an
 ;; ErrorValue that will abort the build and report the errors to the user.
-(g/defnk produce-build-targets [_node-id resource simpledata-pb own-build-errors]
+(g/defnk produce-build-targets [_node-id resource save-value own-build-errors]
   (g/precluding-errors own-build-errors
     [(bt/with-content-hash
        {:node-id _node-id
         :resource (workspace/make-build-resource resource)
         :build-fn build-simpledata
-        :user-data {:simpledata-pb simpledata-pb}})]))
+        :user-data {:simpledata-pb save-value}})]))
 
 ;; Callback invoked by the form view when a value is edited by the user. Is
 ;; expected to perform the relevant changes to the graph. In our case, we simply
@@ -142,16 +142,18 @@
 
 ;; Produce a Clojure map representation of the protobuf field values that can be
 ;; saved to disk in protobuf text format, or built into a binary protobuf
-;; message for the engine runtime.
-(g/defnk produce-simpledata-pb [name f32 u32 i32 u64 i64 v3 array-f32]
-  {:name name
-   :f32 f32
-   :u32 u32
-   :i32 i32
-   :u64 u64
-   :i64 i64
-   :v3 v3
-   :array-f32 array-f32})
+;; message for the engine runtime. To keep the project files small, we omit
+;; default values from the output.
+(g/defnk produce-save-value [name f32 u32 i32 u64 i64 v3 array-f32]
+  (protobuf/make-map-without-defaults @simpledata-plugin-desc-cls
+    :name name
+    :f32 f32
+    :u32 u32
+    :i32 i32
+    :u64 u64
+    :i64 i64
+    :v3 v3
+    :array-f32 array-f32))
 
 ;; Produce an ErrorPackage of one or more ErrorValues that express problems with
 ;; our SimpleData. If there are no errors, produce nil. Any errors produced here
@@ -171,16 +173,15 @@
 ;; In our case, that simply means setting the property values on our node to the
 ;; values from the protobuf data.
 (defn- load-simpledata [_project self _resource data]
-  (g/set-property
-    self
-    :name (:name data)
-    :f32 (:f32 data)
-    :u32 (:u32 data)
-    :i32 (:i32 data)
-    :u64 (:u64 data)
-    :i64 (:i64 data)
-    :v3 (:v3 data)
-    :array-f32 (:array-f32 data)))
+  (gu/set-properties-from-pb-map self @simpledata-plugin-desc-cls data
+    name :name
+    f32 :f32
+    u32 :u32
+    i32 :i32
+    u64 :u64
+    i64 :i64
+    v3 :v3
+    array-f32 :array-f32))
 
 ;; Defines a node type that will represent SimpleData resources in the graph.
 ;; Whenever we encounter a .simpledata file in the project, a SimpleDataNode is
@@ -192,21 +193,40 @@
   (inherits resource-node/ResourceNode)
 
   ;; Editable properties.
-  (property name g/Str (dynamic error (g/fnk [_node-id name] (validate-name _node-id name))))
-  (property f32 g/Num (dynamic error (g/fnk [_node-id f32] (validate-f32 _node-id f32))))
-  (property u32 g/Int (dynamic error (g/fnk [_node-id u32] (validate-u32 _node-id u32))))
-  (property i32 g/Int)
-  (property u64 g/Int (dynamic error (g/fnk [_node-id u64] (validate-u64 _node-id u64))))
-  (property i64 g/Int)
-  (property v3 types/Vec3)
-  (property array-f32 g/Any)
+  ;; The defaults should be equal to the ones in the SimpleData$SimpleDataDesc
+  ;; class generated from `simpledata_ddf.proto`. This ensures we'll have the
+  ;; correct defaults for fields not present in the `.simpledata` files.
+  (property name g/Str
+            (default (protobuf/default @simpledata-plugin-desc-cls :name))
+            (dynamic error (g/fnk [_node-id name] (validate-name _node-id name))))
 
-  ;; Outputs for internal use.
-  (output simpledata-pb g/Any produce-simpledata-pb)
+  (property f32 g/Num
+            (default (protobuf/default @simpledata-plugin-desc-cls :f32))
+            (dynamic error (g/fnk [_node-id f32] (validate-f32 _node-id f32))))
+
+  (property u32 g/Int
+            (default (protobuf/default @simpledata-plugin-desc-cls :u32))
+            (dynamic error (g/fnk [_node-id u32] (validate-u32 _node-id u32))))
+
+  (property i32 g/Int
+            (default (protobuf/default @simpledata-plugin-desc-cls :i32)))
+
+  (property u64 g/Int
+            (default (protobuf/default @simpledata-plugin-desc-cls :u64))
+            (dynamic error (g/fnk [_node-id u64] (validate-u64 _node-id u64))))
+
+  (property i64 g/Int
+            (default (protobuf/default @simpledata-plugin-desc-cls :i64)))
+
+  (property v3 types/Vec3
+            (default (protobuf/default @simpledata-plugin-desc-cls :v3)))
+
+  (property array-f32 g/Any
+            (default []))
 
   ;; Outputs we're expected to implement.
   (output form-data g/Any :cached produce-form-data)
-  (output save-value g/Any (gu/passthrough simpledata-pb))
+  (output save-value g/Any :cached produce-save-value)
   (output own-build-errors g/Any produce-own-build-errors)
   (output build-targets g/Any :cached produce-build-targets))
 
