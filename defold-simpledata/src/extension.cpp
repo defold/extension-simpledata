@@ -26,7 +26,7 @@ static const char* SIMPLEDATA_EXT = "simpledatac";
 static int SimpleDataComp_GetArrayF32(lua_State* L)
 {
     dmSimpleData::SimpleDataComponent* component = 0;
-    dmGameObject::GetComponentFromLua(L, 1, SIMPLEDATA_EXT, 0, (void**)&component, 0);
+    dmScript::GetComponentFromLua(L, 1, SIMPLEDATA_EXT, 0, (void**)&component, 0);
     assert(component);
 
     float* data    = 0;
