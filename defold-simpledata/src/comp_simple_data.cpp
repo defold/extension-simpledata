@@ -91,7 +91,7 @@ namespace dmSimpleData
     static void* CompSimpleDataGetComponent(const dmGameObject::ComponentGetParams& params)
     {
         SimpleDataWorld* world = (SimpleDataWorld*)params.m_World;
-        uint32_t index = (uint32_t)*params.m_UserData;
+        uint32_t index = (uint32_t) params.m_UserData;
         return GetComponentFromIndex(world, index);
     }
 

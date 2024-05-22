@@ -7,7 +7,7 @@ set -e
 PROJECT=defold-simpledata
 
 if [ "" == "${BOB}" ]; then
-    BOB=~/work/defold/tmp/dynamo_home/share/java/bob.jar
+    BOB=${DYNAMO_HOME}/share/java/bob.jar
 fi
 
 echo "Using BOB=${BOB}"
@@ -81,7 +81,7 @@ function build_plugin() {
 
 PLATFORMS=$1
 if [ "" == "${PLATFORM}" ]; then
-    PLATFORMS="x86_64-macos x86_64-linux x86_64-win32"
+    PLATFORMS="arm64-macos x86_64-macos x86_64-linux x86_64-win32"
 fi
 
 if [[ $# -gt 0 ]] ; then
@@ -96,6 +96,10 @@ for platform in $PLATFORMS; do
 
     if [ "$platform" == "x86_64-macos" ]; then
         platform_ne="x86_64-osx"
+    fi
+
+    if [ "$platform" == "arm64-macos" ]; then
+        platform_ne="arm64-osx"
     fi
 
     build_plugin $platform $platform_ne
