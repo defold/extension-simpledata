@@ -1,7 +1,7 @@
 #include <memory.h>
 
 #include <dmsdk/dlib/log.h>
-#include <dmsdk/resource/resource.hpp>
+#include <dmsdk/resource/resource.h>
 
 #include "simpledata_ddf.h" // generated from the simpledata_ddf.proto
 #include "res_simpledata.h"
