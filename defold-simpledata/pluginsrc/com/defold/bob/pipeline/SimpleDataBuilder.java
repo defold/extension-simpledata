@@ -26,7 +26,7 @@ import com.dynamo.simpledata.proto.SimpleData.SimpleDataDesc;
 public class SimpleDataBuilder extends ProtoBuilder<SimpleDataDesc.Builder> {
 
     @Override
-    protected SimpleDataDesc.Builder transform(Task<Void> task, IResource resource, SimpleDataDesc.Builder builder) throws CompileExceptionError {
+    protected SimpleDataDesc.Builder transform(Task task, IResource resource, SimpleDataDesc.Builder builder) throws CompileExceptionError {
         // Add any transforms here
         return builder;
     }
