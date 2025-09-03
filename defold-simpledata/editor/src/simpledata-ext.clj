@@ -85,8 +85,9 @@
         :user-data {:simpledata-pb save-value}})]))
 
 ;; Callback invoked by the form view when a value is edited by the user. Is
-;; expected to perform the relevant changes to the graph. In our case, we simply
-;; set the value of the property on the edited SimpleDataNode.
+;; expected to return a sequence of transaction steps that perform the relevant
+;; changes to the graph. In our case, we simply set the value of the property on
+;; the edited SimpleDataNode.
 (defn- set-form-op [user-data property-path value]
   (assert (= 1 (count property-path)))
   (let [node-id (:node-id user-data)
