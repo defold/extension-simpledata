@@ -87,20 +87,20 @@
 ;; Callback invoked by the form view when a value is edited by the user. Is
 ;; expected to perform the relevant changes to the graph. In our case, we simply
 ;; set the value of the property on the edited SimpleDataNode.
-(defn- set-form-op! [user-data property-path value]
+(defn- set-form-op [user-data property-path value]
   (assert (= 1 (count property-path)))
   (let [node-id (:node-id user-data)
         prop-kw (first property-path)]
-    (g/set-property! node-id prop-kw value)))
+    (g/set-property node-id prop-kw value)))
 
 ;; Callback invoked by the form view when a value is cleared (or reset), by the
 ;; user. Is expected to perform the relevant changes to the graph. In our case,
 ;; we simply clear the value of the property on the edited SimpleDataNode.
-(defn- clear-form-op! [user-data property-path]
+(defn- clear-form-op [user-data property-path]
   (assert (= 1 (count property-path)))
   (let [node-id (:node-id user-data)
         prop-kw (first property-path)]
-    (g/clear-property! node-id prop-kw)))
+    (g/clear-property node-id prop-kw)))
 
 ;; Produce form-data for editing SimpleData using the form view. This can be
 ;; used to open standalone SimpleData resources in an editor tab. The form view
@@ -108,8 +108,8 @@
 (g/defnk produce-form-data [_node-id name f32 u32 i32 u64 i64 v3]
   {:navigation false
    :form-ops {:user-data {:node-id _node-id}
-              :set set-form-op!
-              :clear clear-form-op!}
+              :set set-form-op
+              :clear clear-form-op}
    :sections [{:title "SimpleData"
                :fields [{:path [:name]
                          :label "Name"
