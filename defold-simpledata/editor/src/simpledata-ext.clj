@@ -95,8 +95,9 @@
     (g/set-property node-id prop-kw value)))
 
 ;; Callback invoked by the form view when a value is cleared (or reset), by the
-;; user. Is expected to perform the relevant changes to the graph. In our case,
-;; we simply clear the value of the property on the edited SimpleDataNode.
+;; user. Is expected to return a sequence of transaction steps that perform the
+;; relevant changes to the graph. In our case, we simply clear the value of the
+;; property on the edited SimpleDataNode.
 (defn- clear-form-op [user-data property-path]
   (assert (= 1 (count property-path)))
   (let [node-id (:node-id user-data)
