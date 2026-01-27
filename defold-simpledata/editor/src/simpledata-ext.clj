@@ -14,6 +14,7 @@
   (:require [dynamo.graph :as g]
             [editor.build-target :as bt]
             [editor.graph-util :as gu]
+            [editor.localization :as localization]
             [editor.protobuf :as protobuf]
             [editor.resource-node :as resource-node]
             [editor.types :as types]
@@ -252,6 +253,7 @@
     :ddf-type @simpledata-plugin-desc-cls
     :load-fn load-simpledata
     :icon simpledata-icon
+    :category (localization/message "resource.category.components")
     :view-types [:cljfx-form-view :text]
     :view-opts {}
     :tags #{:component}
