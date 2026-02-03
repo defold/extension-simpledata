@@ -139,6 +139,9 @@ namespace dmSimpleData
         SimpleDataComponent* component = GetComponentFromIndex(world, *params.m_UserData);
         dmGameSystemDDF::SimpleDataDesc* ddf = component->m_Resource->m_DDF;
 
+        int32_t value_index = 0;
+        bool has_key = dmGameObject::GetPropertyOptionsIndex(params.m_Options, 0, &value_index) != dmGameObject::PROPERTY_RESULT_OK;
+
     #define HANDLE_PROP(NAME, VALUE) \
         if (params.m_PropertyId == NAME) \
         { \
@@ -149,14 +152,14 @@ namespace dmSimpleData
     #define HANDLE_ARRAY_PROP(NAME, VALUE) \
         if (params.m_PropertyId == NAME) \
         { \
-            if (params.m_Options.m_HasKey) \
+            if (has_key) \
                 return dmGameObject::PROPERTY_RESULT_INVALID_INDEX; \
-            if (params.m_Options.m_Index < 0 || params.m_Options.m_Index >= (VALUE).m_Count) \
+            if (value_index < 0 || value_index >= (VALUE).m_Count) \
             { \
-                dmLogError("Index %u is out of bounds. Array %s only has %u elements.", params.m_Options.m_Index, dmHashReverseSafe64(params.m_PropertyId), (VALUE).m_Count); \
+                dmLogError("Index %u is out of bounds. Array %s only has %u elements.", value_index, dmHashReverseSafe64(params.m_PropertyId), (VALUE).m_Count); \
                 return dmGameObject::PROPERTY_RESULT_INVALID_INDEX; \
             } \
-            float value = (VALUE).m_Data[params.m_Options.m_Index]; \
+            float value = (VALUE).m_Data[value_index]; \
             out_value.m_Variant = dmGameObject::PropertyVar(value); \
             return dmGameObject::PROPERTY_RESULT_OK; \
         }
