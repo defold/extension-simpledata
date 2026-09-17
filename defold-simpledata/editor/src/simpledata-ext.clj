@@ -170,13 +170,20 @@
     (validate-u64 _node-id u64)))
 
 ;; After a SimpleDataNode has been created for our SimpleData resource, this
-;; function is called with our self node-id and a Clojure map representation of
-;; the protobuf data read from our resource. We're expected to return a sequence
-;; of transaction steps that populate our SimpleDataNode from the protobuf data.
-;; In our case, that simply means setting the property values on our node to the
-;; values from the protobuf data.
-(defn- load-simpledata [_project self _resource data]
-  (gu/set-properties-from-pb-map self @simpledata-plugin-desc-cls data
+;; function is called with a load-opts context map and a node-load-info map.
+;; The load-opts has the :project, the :workspace, and a :resolve-resource-fn
+;; which can resolve paths into rooted proj-paths given an owner-resource and a
+;; path. The node-load-info has the :node-id we're populating, our :resource,
+;; the :source-value Clojure map read from our protobuf :resource, and the
+;; :owner-resource for use with the :resolve-resource-fn. We're expected to
+;; return a sequence of transaction steps that populate our SimpleDataNode from
+;; the source-value. In our case, that simply means setting the property values
+;; on our SimpleDataNode to the values from the source-value map. We use the
+;; gu/set-properties-from-pb-map helper for this to ensure we're not misspelling
+;; any field or property names.
+(defn- load-simpledata [_load-opts {:keys [node-id source-value] :as _node-load-info}]
+  {:pre [(map? source-value)]} ; SimpleData$SimpleDataDesc in map format.
+  (gu/set-properties-from-pb-map node-id @simpledata-plugin-desc-cls source-value
     name :name
     f32 :f32
     u32 :u32
