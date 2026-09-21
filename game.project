@@ -16,7 +16,7 @@ title = extension-simpledata
 
 [library]
 include_dirs = defold-simpledata
-defold_min_version = 1.12.2
+defold_min_version = 1.14.0
 
 [input]
 game_binding = /builtins/input/all.input_bindingc
